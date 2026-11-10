@@ -1,0 +1,361 @@
+[
+  {
+    "k": [
+      "aapt2",
+      "android.jar"
+    ],
+    "fix": "export AJ=~/android-sdk/platforms/android-34/android.jar\nls $AJ"
+  },
+  {
+    "k": [
+      "javac"
+    ],
+    "fix": "pkg install -y openjdk-17\njavac -cp $AJ -source 8 -target 8 -d out *.java"
+  },
+  {
+    "k": [
+      "d8"
+    ],
+    "fix": "d8 --classpath $AJ --lib $AJ --output dex/ out/*.class\n# inner class: split to NinoBridge.java"
+  },
+  {
+    "k": [
+      "apksigner",
+      "keystore"
+    ],
+    "fix": "apksigner sign --ks ~/myAI/nino2.keystore --ks-pass pass:123456 --out app-signed.apk app.apk\napksigner verify app-signed.apk"
+  },
+  {
+    "k": [
+      "zipalign"
+    ],
+    "fix": "zipalign -f -v 4 app.apk app-aligned.apk"
+  },
+  {
+    "k": [
+      "app not installed",
+      "isn't compatible"
+    ],
+    "fix": "AndroidManifest: versionCode=1 versionName=1.0 minSdk=21 targetSdk=33"
+  },
+  {
+    "k": [
+      "decode"
+    ],
+    "fix": "unzip -l app.apk\n# decode: apktool d app.apk -o out  OR  unzip app.apk -d out/"
+  },
+  {
+    "k": [
+      "decompile"
+    ],
+    "fix": "# decompile dex:\n# d8 -> dex, then: jadx -d out app.apk  OR  unzip -p app.apk classes.dex > classes.dex"
+  },
+  {
+    "k": [
+      "rebuild",
+      "patch"
+    ],
+    "fix": "aapt2 link -o app.apk -I $AJ --manifest AndroidManifest.xml -R res/*.xml\njavac -cp $AJ -source 8 -target 8 -d out *.java\nd8 --classpath $AJ --lib $AJ --output dex/ out/*.class\nzipalign -f -v 4 app.apk app-aligned.apk\napksigner sign --ks ~/myAI/nino2.keystore --ks-pass pass:123456 --out app-signed.apk app-aligned.apk"
+  },
+  {
+    "k": [
+      "fetch",
+      "webview"
+    ],
+    "fix": "WebView blocks fetch(file) -> embed: <script>window.NINO_DATA=[...]</script>"
+  },
+  {
+    "k": [
+      "permission denied"
+    ],
+    "fix": "chmod +x *.sh\ntermux-setup-storage"
+  },
+  {
+    "k": [
+      "manifest",
+      "xml"
+    ],
+    "fix": "# Check AndroidManifest.xml: package, versionCode, uses-sdk, activity name must match MainActivity.java"
+  },
+  {
+    "k": [
+      "cannot find symbol"
+    ],
+    "fix": "# cannot find symbol = typo / missing import / wrong variable name\n# 1. Check spelling of variable/method\n# 2. Check import: import android.webkit.WebView;\n# 3. Rebuild: javac -cp $AJ -source 8 -target 8 -d out *.java"
+  },
+  {
+    "k": [
+      "package does not exist"
+    ],
+    "fix": "# package does not exist = wrong import or missing android.jar\n# Fix: javac -cp ~/android-sdk/platforms/android-34/android.jar -d out *.java\n# Check: ls ~/android-sdk/platforms/android-34/android.jar"
+  },
+  {
+    "k": [
+      "class file has wrong version",
+      "unsupported class file"
+    ],
+    "fix": "# Wrong Java version - class compiled with newer JDK\n# Fix: javac -source 8 -target 8 -d out *.java\n# Check: javac -version  # must be 17, not 21+"
+  },
+  {
+    "k": [
+      "unclosed string",
+      "';' expected",
+      "reached end of file"
+    ],
+    "fix": "# Syntax error - missing ; or \" or }\n# Fix: open file, find line from error, add missing ; at end\n# Check: javac shows line number: MainActivity.java:23: error: ';' expected"
+  },
+  {
+    "k": [
+      "already defined",
+      "duplicate class"
+    ],
+    "fix": "# Duplicate class = same class in 2 files\n# Fix: ls *.java - find duplicate MainActivity.java, delete one\n# Keep only one file per class name"
+  },
+  {
+    "k": [
+      "mainactivity$bridge",
+      "inner class"
+    ],
+    "fix": "# d8 inner class crash - DO NOT compile inner class together\n# Fix: Split Bridge to separate file NinoBridge.java\n# Then: javac -cp $AJ -source 8 -target 8 -d out *.java\nd8 --classpath $AJ --lib $AJ --output dex/ out/*.class"
+  },
+  {
+    "k": [
+      "type android.app.activity was not found"
+    ],
+    "fix": "# HARMLESS d8 warning - ignore it\n# d8 says Activity not found because --lib $AJ missing\n# Fix: add --lib $AJ : d8 --classpath $AJ --lib $AJ --output dex/ out/*.class"
+  },
+  {
+    "k": [
+      "no such file",
+      "no such file or directory"
+    ],
+    "fix": "# File not found - wrong path or not created\n# Fix: pwd\nls -lh\n# Check exact name: ls ~/NINO-CODE-FIXER/\n# Use full path: /data/data/com.termux/files/home/..."
+  },
+  {
+    "k": [
+      "command not found",
+      "not found"
+    ],
+    "fix": "# Command not found - tool not installed or not in PATH\n# Fix: pkg install -y <tool>\n# For aapt2: export PATH=$PATH:~/android-sdk/build-tools/34.0.0\n# For javac: pkg install -y openjdk-17"
+  },
+  {
+    "k": [
+      "failed to load",
+      "could not load"
+    ],
+    "fix": "# Failed to load = corrupted APK / missing dex\n# Fix: rebuild clean:\nrm -rf out dex *.apk\nmkdir -p out dex\naapt2 compile -o compiled.zip --dir res/\naapt2 link -o app.apk -I $AJ --manifest AndroidManifest.xml compiled.zip"
+  },
+  {
+    "k": [
+      "aapt2 link",
+      "failed to execute aapt"
+    ],
+    "fix": "# aapt2 link failed = bad manifest or bad XML\n# Fix: check AndroidManifest.xml - package, versionCode, activity name\n# Check res/*.xml - unclosed tag\n# Run: aapt2 link -o app.apk -I $AJ --manifest AndroidManifest.xml -v"
+  },
+  {
+    "k": [
+      "manifest merger",
+      "manifest malformed"
+    ],
+    "fix": "# Manifest malformed = missing <manifest> or <application>\n# Fix: cat AndroidManifest.xml - must start <manifest package=\"com.nino.xxx\">\n# Must have <uses-sdk android:minSdkVersion=\"21\" android:targetSdkVersion=\"33\"/>"
+  },
+  {
+    "k": [
+      "keystore was tampered",
+      "keystore password"
+    ],
+    "fix": "# Wrong keystore password\n# Your key: ~/myAI/nino2.keystore pass:123456\n# Fix: apksigner sign --ks ~/myAI/nino2.keystore --ks-pass pass:123456 --out app-signed.apk app.apk\n# If still fails: ls -lh ~/myAI/nino2.keystore"
+  },
+  {
+    "k": [
+      "zipalign failed",
+      "zipalign: command"
+    ],
+    "fix": "# zipalign missing or wrong order\n# Fix: zipalign must run BEFORE apksigner\n# Order: aapt2 -> javac -> d8 -> zipalign -> apksigner\nzipalign -f -v 4 app.apk app-aligned.apk"
+  },
+  {
+    "k": [
+      "dex",
+      "d8 failed"
+    ],
+    "fix": "# d8 failed = bad .class files\n# Fix: clean and rebuild:\nrm -rf out dex\nmkdir -p out dex\njavac -cp $AJ -source 8 -target 8 -d out *.java\nd8 --classpath $AJ --lib $AJ --output dex/ out/*.class"
+  },
+  {
+    "k": [
+      "out of memory",
+      "java heap",
+      "heap space"
+    ],
+    "fix": "# Out of memory - Termux low RAM\n# Fix: close apps, free RAM\n# Then: javac -J-Xmx512m -cp $AJ -d out *.java"
+  },
+  {
+    "k": [
+      "webview",
+      "net::err_file_not_found"
+    ],
+    "fix": "# WebView file not found = asset not in APK\n# Fix: check assets: index.html must be in APK assets/\n# In build: aapt2 link must include assets, or copy index.html to assets/\n# Use: w.loadUrl(\"file:///android_asset/index.html\")"
+  },
+  {
+    "k": [
+      "javascriptinterface",
+      "@javascriptinterface"
+    ],
+    "fix": "# Bridge not working = missing @JavascriptInterface\n# Fix: in NinoBridge.java:\n# @JavascriptInterface\n# public String askSpark(String q){...}\n# In MainActivity: w.addJavascriptInterface(new NinoBridge(), \"NinoBridge\");"
+  },
+  {
+    "k": [
+      "networkonmainthread",
+      "network on main"
+    ],
+    "fix": "# NetworkOnMainThread = network on UI thread - Android blocks it\n# Fix: use new Thread: new Thread(()->{ /* network code */ }).start();\n# Never call HttpURLConnection on main thread"
+  },
+  {
+    "k": [
+      "ssl",
+      "certificate",
+      "https"
+    ],
+    "fix": "# SSL / cert error - Termux certs outdated\n# Fix: pkg install -y ca-certificates\n# Or use http for local test, https for real API"
+  },
+  {
+    "k": [
+      "json",
+      "expected",
+      "json parse"
+    ],
+    "fix": "# JSON parse error = bad JSON from API / file\n# Fix: check JSON: python3 -m json.tool file.json\n# In Java: try{ new JSONObject(s); }catch(Exception e){ Log.e(\"JSON\",e.toString()); }"
+  },
+  {
+    "k": [
+      "nullpointer",
+      "null pointer"
+    ],
+    "fix": "# NullPointer = variable is null, you called .something on null\n# Fix: find line from logcat, add null check:\n# if (x != null) { x.doSomething(); }\n# In Termux: logcat | grep -i null"
+  },
+  {
+    "k": [
+      "indexoutofbounds",
+      "arrayindex"
+    ],
+    "fix": "# IndexOutOfBounds = list[i] where i >= size\n# Fix: check size before access:\n# if (i < list.size()) { list.get(i); }\n# Print: System.out.println(\"size=\"+list.size()+\" i=\"+i);"
+  },
+  {
+    "k": [
+      "filenotfound",
+      "file not found"
+    ],
+    "fix": "# FileNotFound = path wrong or storage not granted\n# Fix: termux-setup-storage\n# Use: /data/data/com.termux/files/home/... not /sdcard/... without permission\n# Check: ls -lh <path>"
+  },
+  {
+    "k": [
+      "eacces",
+      "permission denied"
+    ],
+    "fix": "# EACCES = no storage permission\n# Fix: termux-setup-storage\n# Then: chmod +x *.sh\n# Check: ls -l file.sh"
+  },
+  {
+    "k": [
+      "git",
+      "merge conflict",
+      "conflict"
+    ],
+    "fix": "# Merge conflict = same file edited twice\n# Fix: git status\n# Open file, delete <<<<<<< ======= >>>>>>> lines, keep correct code\n# Then: git add . && git commit -m \"fix conflict\" && git push"
+  },
+  {
+    "k": [
+      "push rejected",
+      "failed to push"
+    ],
+    "fix": "# Push rejected = remote has new commits\n# Fix: git pull --rebase\n# Then: git push\n# If still fails: git pull origin main --allow-unrelated-histories"
+  },
+  {
+    "k": [
+      "gh api",
+      "gh: not found",
+      "gh auth"
+    ],
+    "fix": "# gh not authed\n# Fix: gh auth login\n# Or: gh auth status\n# Check token: cat ~/.config/gh/hosts.yml"
+  },
+  {
+    "k": [
+      "python",
+      "modulenotfound",
+      "no module"
+    ],
+    "fix": "# Python module missing\n# Fix: pip install <module>\n# Example: pip install requests\n# Check: python3 -c \"import sys; print(sys.version)\""
+  },
+  {
+    "k": [
+      "syntaxerror",
+      "invalid syntax"
+    ],
+    "fix": "# Python SyntaxError = missing : or ) or indent\n# Fix: check line from error, Python needs : after if/for/def\n# Check indent: 4 spaces, no tabs"
+  },
+  {
+    "k": [
+      "indentationerror",
+      "unexpected indent"
+    ],
+    "fix": "# IndentationError = mixed tabs + spaces\n# Fix: use 4 spaces only, no tabs\n# In Termux: cat -A file.py | grep -P \"\\t\"  # shows tabs"
+  },
+  {
+    "k": [
+      "pip",
+      "could not fetch",
+      "connection"
+    ],
+    "fix": "# pip no internet = flight mode / no data\n# Fix: check data ON, or use offline: pip install --no-index <wheel>\n# Or: pkg install python-<module> if available"
+  },
+  {
+    "k": [
+      "curl",
+      "could not resolve",
+      "connection refused"
+    ],
+    "fix": "# curl failed = no internet or wrong URL\n# Fix: ping -c1 8.8.8.8\n# If flight mode: data ON\n# Check URL: curl -I https://example.com"
+  },
+  {
+    "k": [
+      "storage",
+      "no space",
+      "disk full"
+    ],
+    "fix": "# Disk full - Termux storage full\n# Fix: df -h\n# Clean: rm -rf ~/storage/downloads/*.apk  # old APKs\n# Check: du -sh ~/NINO* ~/myAI"
+  },
+  {
+    "k": [
+      "apktool",
+      "jadx"
+    ],
+    "fix": "# Decompile APK:\n# jadx: jadx -d out app.apk\n# apktool: apktool d app.apk -o out\n# If not installed: pkg install -y jadx  OR  unzip -p app.apk classes.dex > classes.dex"
+  },
+  {
+    "k": [
+      "logcat",
+      "crash",
+      "fetal"
+    ],
+    "fix": "# App crash - get log:\n# adb logcat | grep -i \"FATAL\\|AndroidRuntime\"  OR  logcat -d | tail -n 100\n# Find line: Caused by: ... at com.nino.xxx.MainActivity.java:XX"
+  },
+  {
+    "k": [
+      "gradle",
+      "gradle build"
+    ],
+    "fix": "# You do NOT use Gradle - you use aapt2/javac/d8\n# Do NOT run gradle in Termux, it eats 500MB+\n# Use your buildchain: aapt2 compile/link + javac + d8 + zipalign + apksigner"
+  },
+  {
+    "k": [
+      "versioncode",
+      "versionname"
+    ],
+    "fix": "# Version missing = App not installed\n# Fix in AndroidManifest.xml:\n# <manifest package=\"com.nino.xxx\" android:versionCode=\"1\" android:versionName=\"1.0\">"
+  },
+  {
+    "k": [
+      "minSdk",
+      "targetSdk"
+    ],
+    "fix": "# SDK mismatch = App isn't compatible\n# Fix: <uses-sdk android:minSdkVersion=\"21\" android:targetSdkVersion=\"33\" />\n# Never target 34 on old phone, use 33"
+  }
+]

@@ -1,0 +1,5 @@
+package com.nino.codefixer;
+import android.app.Activity; import android.os.Bundle; import android.webkit.WebView;
+public class MainActivity extends Activity {
+ protected void onCreate(Bundle b){ super.onCreate(b); WebView w=new WebView(this); w.getSettings().setJavaScriptEnabled(true); w.loadUrl("file:///android_asset/index.html"); setContentView(w); }
+}
